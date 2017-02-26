@@ -1,12 +1,15 @@
+#include <hx711.h>
+
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 #include <OneWire.h>
-#include <hx711.h>
+
 
 #define DOUT A1
 #define SCK A0
+#define TOUCH_SENSOR 2A
 Hx711 scale(A1,A0);
-LiquidCrystal_I2C lcd(0x27,20,4);    //LCD object
+LiquidCrystal_I2C lcd(0x27,20,4,16);    //LCD object
 OneWire  ds(9); 
 
 const int buttonpin=3;//ntc overall_temp value sensor.
@@ -25,7 +28,7 @@ void lcddisplay(double overall_temp,double weight)
     lcd.setCursor(0,0);
     lcd.print("Temp:");
     lcd.print(temp_int);
-    lcd.setCursor(9,0); //Col 12 Row 0
+    lcd.setCursor(13,0); //Col 12 Row 0
     lcd.print("Cold>_<");
    }
    else
@@ -33,7 +36,7 @@ void lcddisplay(double overall_temp,double weight)
     lcd.setCursor(0,0);
     lcd.print("Temp:");
     lcd.print(temp_int);
-    lcd.setCursor(9,0); //Col 12 Row 0
+    lcd.setCursor(13,0); //Col 12 Row 0
     lcd.print(" Fine:)");
    }
    
@@ -104,36 +107,34 @@ float temp_sensor()
   Serial.print("  Temperature = ");
   Serial.print(celsius);
   Serial.print(" Celsius, ");
-
+  delay(500);
   return celsius;
 }
 float weight_sensor()
 {
-  //lcd.setCursor(0, 1);
-  //lcd.print(scale.getGram(), 1);
+  lcd.setCursor(0, 2);
+  lcd.print("TRH");
+  lcd.print(scale.getGram(), 1);
   Serial.print("Measured weigh: ");
   Serial.print(scale.getGram());
-  //lcd.print(" g");
-  //lcd.print("       ");
+  lcd.print(" g");
   delay(500);
 }
 void setup()
 {
   Serial.begin(9600); //serial IO speed
   pinMode(transistor,OUTPUT);
-
+  pinMode(SCK,OUTPUT);
+  pinMode(TOUCH_SENSOR,INPUT);
   //LCD required procedure
-  //lcd.backlight();
-  lcd.init();
-  lcd.begin(20, 4);  
+  //lcd.init();
+  lcd.begin();
 }
 
 void loop() //system loop
 {
   overall_temp =  temp_sensor();
   overall_weight = weight_sensor();
-  Serial.println("123");
-  
   if(overall_temp<25)
   {
     digitalWrite(transistor,HIGH);
